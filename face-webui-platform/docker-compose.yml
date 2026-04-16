@@ -1,0 +1,100 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  ML Dashboard  —  docker-compose.yml
+#
+#  Usage
+#  ─────
+#  Development start (rebuilds on source changes):
+#      docker compose up --build
+#
+#  Production (pre-built images):
+#      docker compose up -d
+#
+#  With custom backend API URL for frontend:
+#      VITE_API_BASE_URL=http://my-server:8000 docker compose up --build
+#
+#  Environment overrides (create a .env file next to this compose file):
+#      ML_ENGINE_ROOT=/path/to/realtime-face-detection-dl
+#      FASTAPI_DEBUG=false
+# ─────────────────────────────────────────────────────────────────────────────
+
+version: "3.9"
+
+x-restart: &default-restart
+  restart: unless-stopped
+
+# ── Shared ML engine path ─────────────────────────────────────────────────────
+# The backend needs read access to the ML model weights, val dataset, etc.
+# Adjust ML_ENGINE_ROOT if your checkout is in a different location.
+x-ml-engine-root: &ml-engine-root
+  ${ML_ENGINE_ROOT:-../realtime-face-detection-dl}
+
+services:
+  # ── Backend (FastAPI + Uvicorn) ──────────────────────────────────────────
+  backend:
+    <<: *default-restart
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: ml-dashboard-backend:latest
+    container_name: ml_backend
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      LOG_LEVEL:  "${LOG_LEVEL:-INFO}"
+      DEBUG:      "${FASTAPI_DEBUG:-false}"
+      RELOAD:     "false"
+      # Override default path — container mounts the ML engine at /ml_engine
+      ML_ENGINE_ROOT: /ml_engine
+    volumes:
+      # ML engine (models, data) — read-only is sufficient for inference/eval
+      - *ml-engine-root:/ml_engine:ro
+      # Writable results / exports directory persisted outside the container
+      - backend-results:/app/results
+      - backend-logs:/app/logs
+      - backend-exports:/app/exports
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks:
+      - dashboard
+
+  # ── Frontend (React + Vite → Nginx) ─────────────────────────────────────
+  frontend:
+    <<: *default-restart
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Point the SPA at the backend through the host network or a reverse proxy
+        VITE_API_BASE_URL: "${VITE_API_BASE_URL:-http://localhost:8000}"
+        VITE_WS_BASE_URL:  "${VITE_WS_BASE_URL:-ws://localhost:8000}"
+    image: ml-dashboard-frontend:latest
+    container_name: ml_frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/nginx-health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - dashboard
+
+# ── Volumes ───────────────────────────────────────────────────────────────────
+volumes:
+  backend-results:
+  backend-logs:
+  backend-exports:
+
+# ── Networks ──────────────────────────────────────────────────────────────────
+networks:
+  dashboard:
+    driver: bridge

@@ -1,0 +1,3 @@
+model_name,runs,latency_mean_ms,latency_p95_ms,avg_fps,precision,recall,f1
+scratch_cnn,8,148.971375,182.78925,13.3475,0.0,0.0,0.0
+mtcnn,3,99.92866666666667,169.28533333333334,10.023333333333333,0.0472,0.0495,0.0483

@@ -1,0 +1,59 @@
+# ══════════════════════════════════════════════════════════════════════════════
+#  VIT Attendance System — Merged Requirements
+#  Combines: Ultralytics/YOLOv8 base + InsightFace ArcFace
+#  Install:  pip install -r requirements.txt
+#
+#  ⚠  IMPORTANT — onnxruntime conflict:
+#     'onnxruntime' and 'onnxruntime-gpu' CANNOT coexist.
+#     You have a GPU (6GB VRAM) → keep onnxruntime-gpu uncommented.
+#     If running on CPU-only machine → swap to plain onnxruntime.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── Core / Base ───────────────────────────────────────────────────────────────
+matplotlib>=3.2.2
+numpy>=1.24.0           # ↑ bumped from 1.18.5  — InsightFace minimum is 1.24
+opencv-python>=4.8.0    # ↑ bumped from 4.6.0   — fixes MJPG capture stability
+Pillow>=7.1.2
+PyYAML>=5.3.1
+requests>=2.23.0
+scipy>=1.4.1
+torch>=1.10.0           # ↑ bumped from 1.7.0   — ONNX Runtime 1.16 requires >=1.10
+torchvision>=0.11.0     # ↑ bumped from 0.8.1   — aligned with torch>=1.10
+tqdm>=4.64.0
+
+# ── Attendance System ─────────────────────────────────────────────────────────
+ultralytics>=8.0.0      # YOLOv8 face detection + ByteTrack tracking
+insightface>=0.7.3      # ArcFace buffalo_l — 512-dim face recognition
+
+# ── ONNX Runtime  (PICK ONE — never install both) ─────────────────────────────
+onnxruntime-gpu>=1.16.0 # ← GPU version  (you have 6GB VRAM — use this)
+# onnxruntime>=1.16.0   # ← CPU fallback (uncomment + comment line above if no CUDA)
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+tensorboard>=2.4.1
+# clearml
+# comet
+
+# ── Plotting / Analytics ──────────────────────────────────────────────────────
+pandas>=1.1.4
+seaborn>=0.11.0
+
+# ── Extras ────────────────────────────────────────────────────────────────────
+ipython
+psutil
+thop>=0.1.1
+
+# ── Export (disabled — enable only when needed) ───────────────────────────────
+# coremltools>=6.0       # CoreML export
+# onnx>=1.12.0           # ONNX export
+# onnx-simplifier>=0.4.1 # ONNX simplifier
+# nvidia-pyindex         # TensorRT export
+# nvidia-tensorrt        # TensorRT export
+# scikit-learn==0.19.2   # CoreML quantization
+# tensorflow>=2.4.1      # TF exports
+# tensorflowjs>=3.9.0    # TF.js export
+# openvino-dev           # OpenVINO export
+# albumentations>=1.0.3
+# pycocotools>=2.0.6     # COCO mAP
+# roboflow
+

@@ -1,0 +1,211 @@
+# VIT Elite — AI-Based CCTV Attendance System
+## README — Faculty User Guide
+
+---
+
+## 📋 SYSTEM OVERVIEW
+
+This system has TWO modes of operation:
+
+  ┌─────────────────────────────────────────────────────────┐
+  │  main.py          → KIOSK MODE (Live Webcam Only)       │
+  │                     Student walks up & scans face       │
+  │                     Checks time slot (Allowed/Late)     │
+  │                     One student at a time               │
+  ├─────────────────────────────────────────────────────────┤
+  │  process_video.py → CCTV MODE (Video File OR Webcam)    │
+  │                     Bulk process entire class video     │
+  │                     Multiple faces at once              │
+  │                     Voting system for accuracy          │
+  └─────────────────────────────────────────────────────────┘
+
+Technologies used:
+  - YOLOv8  → detects faces in the video / webcam feed
+  - ArcFace → extracts biometric face embeddings
+  - Cosine Similarity → matches faces to enrolled students
+  - CSV output → attendance saved automatically
+
+---
+
+## 💻 SYSTEM REQUIREMENTS
+
+  - Windows 10 / 11 (64-bit)
+  - Python 3.9 or 3.10
+  - NVIDIA GPU (recommended) — works on CPU too (slower)
+  - Minimum 8GB RAM
+  - Webcam (for Kiosk mode or live CCTV mode)
+
+---
+
+## 📁 FOLDER STRUCTURE
+
+  VIT_Attendance/
+  ├── main.py                 ← Kiosk live webcam attendance
+  ├── process_video.py        ← CCTV bulk video attendance
+  ├── enrollment.py           ← Run once to enroll students
+  ├── models/
+  │   └── yolov8n-face.pt     ← YOLO face detection model
+  ├── data/
+  │   ├── biometric_vault.pkl ← Auto-created after enrollment
+  │   ├── live_attendance.csv ← Saved by main.py
+  │   └── attendance_DD-MM-YYYY.csv ← Saved by process_video.py
+  └── requirements.txt
+
+---
+
+## ⚙️ ONE-TIME SETUP (Do this only once)
+
+Open Command Prompt in the project folder and run:
+
+  pip install -r requirements.txt
+
+If requirements.txt is not present, run:
+
+  pip install opencv-python insightface ultralytics torch
+  pip install numpy onnxruntime-gpu pandas
+
+---
+
+## 👤 STEP 1 — ENROLL STUDENTS (One-time per batch)
+
+  python enrollment.py
+
+  - Enter student Name and Reg No when prompted
+  - System captures 5 face angles automatically
+  - Repeat for each student
+  - Saves to: data/biometric_vault.pkl
+
+---
+
+## 🖥️ STEP 2A — KIOSK MODE  (main.py)
+
+Use this when a webcam is placed at the classroom door or
+podium. Students walk up one by one and get scanned.
+
+  ▶ START KIOSK:
+      python main.py
+
+  ✅ What it does:
+  - Opens webcam in fullscreen
+  - Detects and recognises each student's face
+  - Checks current time against class schedule:
+      ALLOWED  → Present (within first 15 minutes)
+      LATE     → Late entry logged
+      PAUSED   → Entry denied (no class in session)
+  - Saves to: data/live_attendance.csv
+
+  📊 CSV columns:
+      Name | RegNo | Date | Time | Slot | Status
+
+  ⚠️  NOTE: main.py works with LIVE WEBCAM ONLY.
+      It does NOT support recorded video files.
+      Use process_video.py for recorded videos.
+
+  Press Q to stop and exit.
+
+---
+
+## 🎬 STEP 2B — CCTV / VIDEO MODE  (process_video.py)
+
+Use this to process a recorded classroom CCTV video or
+run live detection on a webcam with multi-face support.
+
+  ▶ OPTION 1 — Recorded video file:
+      python process_video.py --source "C:\Videos\class.mp4"
+
+  ▶ OPTION 2 — Recorded video WITH real class start time:
+      python process_video.py --source "C:\Videos\class.mp4" --start-time 09:00
+
+      (This makes CSV timestamps match real class time)
+
+  ▶ OPTION 3 — Live webcam (multi-face, voting system):
+      python process_video.py --source 0
+
+  ▶ OPTION 4 — Run with default video (set in code):
+      python process_video.py
+
+  ✅ What it does:
+  - Detects ALL faces in the frame simultaneously
+  - Uses 4-vote confirmation before marking Present
+  - Green box = Confirmed Present
+  - Amber box = Recognising... (vote count shown)
+  - Red box   = Unknown
+  - Saves to: data/attendance_DD-MM-YYYY.csv
+
+  📊 CSV columns:
+      Name | Reg No | Date | Time | Status
+
+  Press Q to stop and save CSV.
+
+---
+
+## 🆚 WHICH ONE SHOULD I USE?
+
+  ┌──────────────────────┬──────────────────────────────────┐
+  │ Situation            │ Use                              │
+  ├──────────────────────┼──────────────────────────────────┤
+  │ Webcam at door,      │ main.py                          │
+  │ students scan one    │ (Kiosk Mode)                     │
+  │ by one               │                                  │
+  ├──────────────────────┼──────────────────────────────────┤
+  │ CCTV recording of    │ process_video.py                 │
+  │ full class session   │ --source "video.mp4"             │
+  ├──────────────────────┼──────────────────────────────────┤
+  │ Live webcam, whole   │ process_video.py                 │
+  │ class in frame       │ --source 0                       │
+  └──────────────────────┴──────────────────────────────────┘
+
+---
+
+## 📊 WHAT YOU WILL SEE ON SCREEN
+
+  ┌─────────────────────────────────┬──────────────┐
+  │                                 │ ATTENDANCE   │
+  │   LIVE VIDEO WITH FACE BOXES    │ REGISTER     │
+  │                                 │              │
+  │  🟢 Green box  = PRESENT        │ ✅ Hiba      │
+  │  🟡 Amber box  = RECOGNISING... │ ✅ Noor      │
+  │  🔴 Red box    = Unknown        │ ✅ Sara      │
+  └─────────────────────────────────┴──────────────┘
+
+---
+
+## ❓ COMMON ISSUES & FIXES
+
+  PROBLEM: "Vault not found" error
+  FIX    : Run enrollment.py first to register students
+
+  PROBLEM: Video opens but no faces detected
+  FIX    : Ensure video is well-lit and faces are visible
+
+  PROBLEM: Students marked Unknown even after enrollment
+  FIX    : Re-enroll the student in better lighting
+           Ensure they look directly at camera during enrollment
+
+  PROBLEM: Very slow processing
+  FIX    : Install CUDA-compatible PyTorch for GPU acceleration
+
+  PROBLEM: Window does not open
+  FIX    : Run from Command Prompt, not by double-clicking
+
+---
+
+## 🚀 QUICK START (Summary)
+
+  1. Install packages        →  pip install -r requirements.txt
+  2. Enroll students         →  python enrollment.py
+  3a. Kiosk (live scan)      →  python main.py
+  3b. CCTV recorded video    →  python process_video.py --source "video.mp4"
+  3c. CCTV live webcam       →  python process_video.py --source 0
+  4. Get CSV report          →  Check data/ folder
+
+---
+
+## 📞 SUPPORT
+
+  Developed by : Md Faraaz
+  Department   : Computer Science & Engineering
+  Institution  : VIT Chennai
+  System       : VIT Elite CCTV Attendance v5 FINAL
+
+---

@@ -1,0 +1,38 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Test and type-check caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Node and build outputs
+node_modules/
+dist/
+build/
+
+# Packaging metadata
+*.egg-info/
+*.egg
+
+# Local OS/editor clutter
+.DS_Store
+Thumbs.db
+*.log
+
+# Large generated attendance videos
+attendance_system_soft_computing_/data/output_attendance.mp4
+attendance_system_soft_computing_/data/output_attendance_HD.mp4
+attendance_system_soft_computing_/data/output_attendance_final.mp4
