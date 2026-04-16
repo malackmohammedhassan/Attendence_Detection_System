@@ -61,13 +61,57 @@ Recognized students are logged with date, time, slot, and status. Session report
 - data/: attendance CSV outputs and vault data
 - docs/: project documentation and technical notes
 
-## Setup and Execution
+## How to Run Both Systems Separately
 
-1. Install dependencies from requirements2.txt.
-2. Run enrollmentupd.py to enroll students.
-3. Run main.py for live attendance.
-4. Optionally run process_videoupd.py for offline video-based attendance.
-5. Run generate_summary.py to prepare faculty-friendly summary output.
+### A) Attendance System (Desktop Module)
+
+Location:
+
+- attendance*system_soft_computing*
+
+Quick run order:
+
+1. Install dependencies:
+   - `pip install -r requirements2.txt`
+2. Enroll students:
+   - `python enrollmentupd.py`
+3. Run live attendance:
+   - `python main.py`
+4. Run CCTV/video attendance (optional):
+   - `python process_videoupd.py --source "C:\\path\\to\\video.mp4"`
+5. Generate faculty summary:
+   - `python generate_summary.py`
+
+Detailed run instructions file:
+
+- [RUN_ATTENDANCE_SYSTEM.md](RUN_ATTENDANCE_SYSTEM.md)
+
+Attendance video source (Google Drive):
+
+- https://drive.google.com/drive/folders/1jJ__zesfwOiY8FWt1CGb0mFrPOCCbkwc?usp=drive_link
+
+### B) Face WebUI Platform (Web Module)
+
+Location:
+
+- face-webui-platform
+
+Recommended start (Docker):
+
+1. Open terminal in `face-webui-platform`
+2. Run:
+   - `docker compose up --build`
+3. Access:
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:8000
+
+Detailed run instructions file:
+
+- [RUN_FACE_WEBUI_PLATFORM.md](../../face-webui-platform/Docs/RUN_FACE_WEBUI_PLATFORM.md)
+
+Related combined implementation guide:
+
+- [IMPLEMENTATION_AND_FUNCTIONALITY.md](../../Docs/IMPLEMENTATION_AND_FUNCTIONALITY.md)
 
 ## Academic Contribution
 
